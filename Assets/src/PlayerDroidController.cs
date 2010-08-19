@@ -76,15 +76,28 @@ public class PlayerDroidController : MonoBehaviour {
 		currentHorizontalMovement = x;
 	}
 	
-	
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
 		if (stream.isWriting) {
+			var position = transform.position;
+			var rotation = transform.rotation;
+			
 			stream.Serialize(ref movementSpeed);
 			stream.Serialize(ref currentHorizontalMovement);
+			stream.Serialize(ref position);
+			stream.Serialize(ref rotation);
 		}
 		else {
+			Vector3 position = Vector3.zero;
+			Quaternion rotation = Quaternion.identity;
+			
 			stream.Serialize(ref movementSpeed);
 			stream.Serialize(ref currentHorizontalMovement);
+			stream.Serialize(ref position);
+			stream.Serialize(ref rotation);
+			
+			transform.position = position;
+			transform.rotation = rotation;
+			
 			useNetworkInput = true;
 		}
 	}

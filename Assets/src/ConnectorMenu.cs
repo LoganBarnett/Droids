@@ -18,20 +18,21 @@ public class ConnectorMenu : MonoBehaviour {
 	}
 	
 	void OnGUI() {
-		if (GUI.Button(new Rect(350.0f, 50.0f, 250.0f, 100.0f), "Start a game"))
+		GUILayout.BeginVertical();
+		if (GUILayout.Button("Start a game"))
 		{
 			serverConnector.GetComponent<ServerConnector>().Host();
 //			serverConnector.active = true;
 //			clientConnector.active = false;
 		}
 		
-		if (GUI.Button(new Rect(350.0f, 250.0f, 250.0f, 100.0f), "Join a game"))
+		if (GUILayout.Button("Join a game"))
 		{
 			clientConnector.GetComponent<ClientConnector>().FindGames();
 //			serverConnector.active = false;
 //			clientConnector.active = true;
 		}
 		
-		
+		GUILayout.EndVertical();
 	}
 }

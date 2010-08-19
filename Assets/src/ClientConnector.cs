@@ -17,6 +17,10 @@ public class ClientConnector : MonoBehaviour {
 	
 	void OnGUI() {
 		if (!isFindingGames) return;
+		
+		GUILayout.BeginArea(new Rect(0.0f, 50.0f, Screen.width, Screen.height - 50.0f));
+		GUILayout.BeginVertical();
+		
 		var data = MasterServer.PollHostList();
 		var dotCount = (System.DateTime.Now.Second % 3) + 1;
 		var dots = "";
@@ -58,6 +62,8 @@ public class ClientConnector : MonoBehaviour {
 		}
 		
 		foreach(var logEntry in log) GUILayout.Label(logEntry);
+		GUILayout.EndVertical();
+		GUILayout.EndArea();
 	}
 }
 
