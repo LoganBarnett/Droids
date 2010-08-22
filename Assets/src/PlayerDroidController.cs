@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerDroidController : MonoBehaviour {
@@ -11,6 +12,8 @@ public class PlayerDroidController : MonoBehaviour {
 	public float fallOffTime = 0.25f;
 	public float modelTurnRate = 4.0f;
 	public GameObject model;
+	public GameObject jumpThrusterEmitterContainer;
+	public GameObject jumpThrusterSound;
 	
 	CharacterController controller;
 	float currentHorizontalMovement;
@@ -23,6 +26,8 @@ public class PlayerDroidController : MonoBehaviour {
 	float jumpTimeEnd;
 	float minimumJumpTimeEnd;
 	bool jumpReleased;
+	ParticleEmitter[] jumpThrusterEmitters;
+	AudioSource jumpThrusterSoundSource;
 	
 	bool IsJumpReady { get { return controller.isGrounded; } }
 	
@@ -31,9 +36,11 @@ public class PlayerDroidController : MonoBehaviour {
 	}
 	
 	void Start() {
-		faceRight = Quaternion.Euler(0.0f,  90.0f, 0.0f);
-		faceLeft  = Quaternion.Euler(0.0f, 270.0f, 0.0f);
+		faceRight = Quaternion.Euler(0.0f,   0.0f, 0.0f);
+		faceLeft  = Quaternion.Euler(0.0f, 180.0f, 0.0f);
 		controller = GetComponent<CharacterController>();
+		jumpThrusterEmitters = jumpThrusterEmitterContainer.GetComponentsInChildren<ParticleEmitter>().Where(p => p.gameObject != jumpThrusterEmitterContainer).ToArray();
+		jumpThrusterSoundSource = jumpThrusterSound.GetComponent<AudioSource>();
 	}
 	
 	float GetVerticalMovement() {
@@ -76,6 +83,8 @@ public class PlayerDroidController : MonoBehaviour {
 		controller.Move(new Vector3(x, y, 0.0f) * Time.deltaTime);
 		
 		FaceFromMovement(x);
+		ShowJumpThrusters();
+		PlayJumpThrusterSound();
 		
 		currentHorizontalMovement = x;
 		currentVerticalMovement = y;
@@ -109,7 +118,7 @@ public class PlayerDroidController : MonoBehaviour {
 		}
 	}
 	
-	public void FaceFromMovement(float x) {
+	void FaceFromMovement(float x) {
 		var originallyFacingRight = facingRight;
 		
 		if (x > 0.01f) facingRight = true;
@@ -135,7 +144,7 @@ public class PlayerDroidController : MonoBehaviour {
 		var desiredFacing = desireFaceRight ? faceRight : faceLeft;
 		var oppositeFacing = desireFaceRight ? faceLeft : faceRight;
 		
-		var i = (model.transform.rotation.eulerAngles.y - 90.0f) / 180.0f;
+		var i = model.transform.rotation.eulerAngles.y / 180.0f;
 		if (desireFaceRight) i = 1.0f - i;
 		
 	    var rate = modelTurnRate;
@@ -146,5 +155,17 @@ public class PlayerDroidController : MonoBehaviour {
 	        if (i < 1.0f) yield return i;
 			else yield break;
 	    }
+	}
+	
+	void ShowJumpThrusters() {
+		foreach(var emitter in jumpThrusterEmitters) emitter.emit = IsPlayerJumping && jumpTimeEnd > Time.time;
+	}
+	
+	void PlayJumpThrusterSound() {
+		if (IsPlayerJumping && jumpTimeEnd > Time.time) {
+			if (!jumpThrusterSoundSource.isPlaying) jumpThrusterSoundSource.Play();
+		} else {
+			jumpThrusterSoundSource.Stop();
+		}
 	}
 }
