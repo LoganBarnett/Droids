@@ -26,11 +26,28 @@ public class PlayerDroidController : MonoBehaviour {
 	float jumpTimeEnd;
 	float minimumJumpTimeEnd;
 	bool jumpReleased;
+	bool isNetworkJumping;
 	ParticleEmitter[] jumpThrusterEmitters;
 	AudioSource jumpThrusterSoundSource;
 	
 	bool IsJumpReady { get { return controller.isGrounded; } }
 	
+	
+	/// <summary>
+	/// Is the Droid jumping.
+	/// When true, thrusters should fire and sound effects play
+	/// </summary>
+	bool IsDroidJumping {
+		get {
+			//return useNetworkInput ? currentVerticalMovement > 0.01f : (IsPlayerJumping && jumpTimeEnd > Time.time);
+			return currentVerticalMovement > 0.01f;
+		}
+	}
+	
+	/// <summary>
+	/// Is the player trying to jump, and is he validly jumping?
+	/// When true, the Droid moves up (even when reaching peak of jump).
+	/// </summary>
 	bool IsPlayerJumping {
 		get { return (Input.GetButton("Jump") && !jumpReleased) || minimumJumpTimeEnd > Time.time; }	
 	}
@@ -94,12 +111,15 @@ public class PlayerDroidController : MonoBehaviour {
 		if (stream.isWriting) {
 			var position = transform.position;
 			var rotation = transform.rotation;
+			var isDroidJumping = IsDroidJumping;
 			
 			stream.Serialize(ref movementSpeed);
 			stream.Serialize(ref currentHorizontalMovement);
 			stream.Serialize(ref currentVerticalMovement);
 			stream.Serialize(ref position);
 			stream.Serialize(ref rotation);
+			stream.Serialize(ref jumpTimeEnd);
+			stream.Serialize(ref isDroidJumping);
 		}
 		else {
 			Vector3 position = Vector3.zero;
@@ -110,6 +130,7 @@ public class PlayerDroidController : MonoBehaviour {
 			stream.Serialize(ref currentVerticalMovement);
 			stream.Serialize(ref position);
 			stream.Serialize(ref rotation);
+			stream.Serialize(ref isNetworkJumping);
 			
 			transform.position = position;
 			transform.rotation = rotation;
@@ -158,11 +179,11 @@ public class PlayerDroidController : MonoBehaviour {
 	}
 	
 	void ShowJumpThrusters() {
-		foreach(var emitter in jumpThrusterEmitters) emitter.emit = IsPlayerJumping && jumpTimeEnd > Time.time;
+		foreach(var emitter in jumpThrusterEmitters) emitter.emit = IsDroidJumping;
 	}
 	
 	void PlayJumpThrusterSound() {
-		if (IsPlayerJumping && jumpTimeEnd > Time.time) {
+		if (IsDroidJumping) {
 			if (!jumpThrusterSoundSource.isPlaying) jumpThrusterSoundSource.Play();
 		} else {
 			jumpThrusterSoundSource.Stop();

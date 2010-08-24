@@ -4,24 +4,45 @@ using System.Collections.Generic;
 
 public class ClientConnector : MonoBehaviour {
 	bool isFindingGames;
+	HostData[] data;
 	List<string> log = new List<string>();
+	string directIp = "";
 	
 	public void FindGames() {
-		MasterServer.RequestHostList(Networking.MASTER_SERVER_TYPE);
 		isFindingGames = true;
+		StartCoroutine(PollHostData());
 	}
 	
-	void Update () {
-	
+	void Start() {
+		
 	}
+	
+	IEnumerator PollHostData() {
+		while (isFindingGames) {
+			Debug.Log("Polling for new games...");
+//			MasterServer.ClearHostList();
+			MasterServer.RequestHostList(Networking.MASTER_SERVER_TYPE);
+			data = MasterServer.PollHostList();
+			yield return new WaitForSeconds(1.0f);
+		}
+	}
+		
 	
 	void OnGUI() {
 		if (!isFindingGames) return;
+		if (data == null) return;
 		
-		GUILayout.BeginArea(new Rect(0.0f, 50.0f, Screen.width, Screen.height - 50.0f));
+		GUILayout.BeginArea(new Rect(0.0f, 150.0f, Screen.width, Screen.height - 50.0f));
 		GUILayout.BeginVertical();
 		
-		var data = MasterServer.PollHostList();
+		GUILayout.BeginHorizontal();
+		GUILayout.Label("Direct Connection: ");
+		directIp = GUILayout.TextField(directIp);
+		if (GUILayout.Button("Join Directly")) {
+			ConnectTo(new HostData() { ip = new string[] {directIp}, port = Networking.PORT});
+		}
+		GUILayout.EndHorizontal();
+		
 		var dotCount = (System.DateTime.Now.Second % 3) + 1;
 		var dots = "";
 		for(var i = 0; i < dotCount; ++i)
@@ -49,14 +70,7 @@ public class ClientConnector : MonoBehaviour {
 			GUILayout.FlexibleSpace();
 			if (GUILayout.Button("Connect"))
 			{
-				// Set NAT functionality based on the host information
-				Network.useNat = hostData.useNat;
-				if (Network.useNat)
-					log.Add("Using Nat punchthrough to connect to host");
-				else
-					log.Add("Connecting directly to host: " + string.Join(" ", hostData.ip));
-				Network.Connect(hostData.ip, hostData.port);	
-				Application.LoadLevel("Test");
+				ConnectTo(hostData);
 			}
 			GUILayout.EndHorizontal();	
 		}
@@ -64,6 +78,17 @@ public class ClientConnector : MonoBehaviour {
 		foreach(var logEntry in log) GUILayout.Label(logEntry);
 		GUILayout.EndVertical();
 		GUILayout.EndArea();
+	}
+	
+	void ConnectTo(HostData hostData) {
+		// Set NAT functionality based on the host information
+		Network.useNat = hostData.useNat;
+		if (Network.useNat)
+			log.Add("Using Nat punchthrough to connect to host");
+		else
+			log.Add("Connecting directly to host: " + string.Join(" ", hostData.ip));
+		Network.Connect(hostData.ip, hostData.port);
+		Application.LoadLevel("Test");
 	}
 }
 
