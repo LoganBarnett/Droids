@@ -17,8 +17,10 @@ public class Shot : MonoBehaviour {
 		transform.Translate(movementVector * Time.deltaTime, Space.World);
 	}
 	
-	void OnTriggerEntered(Collider collider) {
-		Destroy(gameObject);
+	void OnTriggerEnter(Collider collider) {
+		if (networkView.isMine) {
+			Network.Destroy(gameObject);
+		}
 	}
 	
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
