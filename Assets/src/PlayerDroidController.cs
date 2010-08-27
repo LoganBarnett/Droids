@@ -14,21 +14,34 @@ public class PlayerDroidController : MonoBehaviour {
 	public GameObject model;
 	public GameObject jumpThrusterEmitterContainer;
 	public GameObject jumpThrusterSound;
+	public float shootingRate = 1.0f;
+	public float shootThresholdAngle = 0.1f;
+	public GameObject shootPosition;
+	public GameObject shotPrefab;
+	public AudioClip shotSound;
 	
+	bool useNetworkInput;
+	
+	// movement related
 	CharacterController controller;
 	float currentHorizontalMovement;
 	float currentVerticalMovement;
-	bool useNetworkInput;
+	
+	// facing related
 	bool facingRight = true;
 	Quaternion faceLeft;
 	Quaternion faceRight;
 	
+	// jumping related
 	float jumpTimeEnd;
 	float minimumJumpTimeEnd;
 	bool jumpReleased;
 	bool isNetworkJumping;
 	ParticleEmitter[] jumpThrusterEmitters;
 	AudioSource jumpThrusterSoundSource;
+	
+	// shooting related
+	float timeSinceLastShot;
 	
 	bool IsJumpReady { get { return controller.isGrounded; } }
 	
@@ -103,6 +116,10 @@ public class PlayerDroidController : MonoBehaviour {
 		ShowJumpThrusters();
 		PlayJumpThrusterSound();
 		
+		if (!useNetworkInput && Input.GetButton("Fire1")) {
+			TryShoot();
+		}
+		
 		currentHorizontalMovement = x;
 		currentVerticalMovement = y;
 	}
@@ -119,7 +136,6 @@ public class PlayerDroidController : MonoBehaviour {
 			stream.Serialize(ref position);
 			stream.Serialize(ref rotation);
 			stream.Serialize(ref jumpTimeEnd);
-			stream.Serialize(ref isDroidJumping);
 		}
 		else {
 			Vector3 position = Vector3.zero;
@@ -130,7 +146,6 @@ public class PlayerDroidController : MonoBehaviour {
 			stream.Serialize(ref currentVerticalMovement);
 			stream.Serialize(ref position);
 			stream.Serialize(ref rotation);
-			stream.Serialize(ref isNetworkJumping);
 			
 			transform.position = position;
 			transform.rotation = rotation;
@@ -188,5 +203,32 @@ public class PlayerDroidController : MonoBehaviour {
 		} else {
 			jumpThrusterSoundSource.Stop();
 		}
+	}
+	
+	void TryShoot() {
+		if (IsValidShootingRotation() && IsValidShootingTime()) {
+			Shoot();
+		}
+	}
+	
+	bool IsValidShootingTime() {
+		return timeSinceLastShot + (1.0f / shootingRate) < Time.time; 
+	}
+	
+	bool IsValidShootingRotation() {
+		var yRotation = model.transform.rotation.eulerAngles.y;
+
+		var withinLeft = yRotation > (180.0f - shootThresholdAngle) &&
+				         yRotation < (180.0f + shootThresholdAngle);
+		var withinRight = yRotation < (  0.0f + shootThresholdAngle) &&
+		        		  yRotation > (  0.0f - shootThresholdAngle);
+		
+		return withinLeft || withinRight;
+	}
+	
+	void Shoot() {
+		var shot = (GameObject)Network.Instantiate(shotPrefab, shootPosition.transform.position, shootPosition.transform.rotation, 0);
+		AudioSource.PlayClipAtPoint(shotSound, shootPosition.transform.position);
+		timeSinceLastShot = Time.time;
 	}
 }
