@@ -218,8 +218,8 @@ public class PlayerDroidController : MonoBehaviour {
 	bool IsValidShootingRotation() {
 		var yRotation = model.transform.rotation.eulerAngles.y;
 
-		var withinLeft = yRotation > (180.0f - shootThresholdAngle) &&
-				         yRotation < (180.0f + shootThresholdAngle);
+		var withinLeft =  yRotation > (180.0f - shootThresholdAngle) &&
+				          yRotation < (180.0f + shootThresholdAngle);
 		var withinRight = yRotation < (  0.0f + shootThresholdAngle) &&
 		        		  yRotation > (  0.0f - shootThresholdAngle);
 		
