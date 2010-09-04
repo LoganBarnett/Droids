@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Linq;
+using System.Collections.Generic;
 
 public class NetworkedPlayerSpawner : MonoBehaviour {
 	public GameObject playerCharacterPrefab;
@@ -10,16 +11,25 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	
 	private Transform[] spawnPoints;
 	private GameObject playerCharacter;
+	public List<GameObject> Droids {get; private set;}
+	
+	
 	private NetworkPlayer player;
 	public NetworkPlayer Player {
 		get;
 		set;
 	}
 	
+	public void RegisterDroid(GameObject droid) {
+		if (droid.networkView.isMine) return;
+		Droids.Add(droid);	
+	}
+	
 	public void DroidDied(GameObject droid) {
 		if (droid.networkView.isMine) {
 			StartCoroutine(DelayedDroidRespawn(respawnDelayInSeconds));
 		}
+		Droids.Remove(droid);
 	}
 	
 	IEnumerator DelayedDroidRespawn(float delayInSeconds) {
@@ -28,6 +38,7 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	}
 	
 	void Start () {
+		Droids = new List<GameObject>();
 		spawnPoints = spawnParent.GetComponentsInChildren<Transform>().Where(s => s.gameObject != spawnParent).ToArray();
 		Debug.Log("points: " + spawnPoints.Length);
 //		Debug.Log("Connected? " + (Network.isClient || Network.isServer));
@@ -55,10 +66,13 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 		return spawnPoints[Random.Range(0, spawnPoints.Length - 1)];
 	}
 	
+	
+	
 	private void SpawnDroid() {
 		var spawnPosition = GetSpawnPosition();
-		playerCharacter = (GameObject)Network.Instantiate(playerCharacterPrefab, spawnPosition.position, spawnPosition.rotation, 0);
-		playerCharacter.GetComponent<DroidLife>().Spawner = this;
+		var droid = (GameObject)Network.Instantiate(playerCharacterPrefab, spawnPosition.position, spawnPosition.rotation, 0);
+		droid.GetComponent<DroidLife>().Spawner = this;
+		Droids.Add(droid);
 	}
 }
 

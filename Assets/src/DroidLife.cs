@@ -1,11 +1,13 @@
 using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public class DroidLife : MonoBehaviour {
 	public float criticalBaseChance = 0.0f;
 	public float deathForce = 100.0f;
 	public GameObject droidModel;
 	public AudioClip droidDeathSound;
+	public float partFadeawayInSeconds = 5.0f;
 	
 	float currentCriticalChance;
 	
@@ -13,6 +15,11 @@ public class DroidLife : MonoBehaviour {
 	
 	void Start() {
 		currentCriticalChance = criticalBaseChance;
+	}
+	
+	void OnNetworkInstantiate(NetworkMessageInfo networkInfo) {
+		Spawner = GameObject.Find("Networking").GetComponent<NetworkedPlayerSpawner>();
+		Spawner.RegisterDroid(gameObject);
 	}
 	
 	void OnTriggerEnter(Collider collider) {
@@ -59,6 +66,20 @@ public class DroidLife : MonoBehaviour {
 			var y = Mathf.Cos(angle);
 			var direction = new Vector3(x, y, 0.0f);
 			rigidbody.AddForce(deathForce * direction);
+			
+			// Ignore collision doesn't work with character controllers ):
+			// Instead use translation hack 
+//			foreach( var controller in Spawner.Droids.Select( d => d.GetComponent<CharacterController>() )) {				
+//				Physics.IgnoreCollision(controller, collider, true);
+//			}
+			child.transform.position = child.transform.position + new Vector3(0.0f, 0.0f, 10.0f);
+			StartCoroutine(FadeParts(child.gameObject));
 		}
+	}
+	
+	IEnumerator FadeParts(GameObject part) {
+		yield return new WaitForSeconds(partFadeawayInSeconds);
+		// TODO: Make alpha fadeout on part before destroying
+		Destroy(part);
 	}
 }
