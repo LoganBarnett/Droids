@@ -5,6 +5,7 @@ public class DroidLife : MonoBehaviour {
 	public float criticalBaseChance = 0.0f;
 	public float deathForce = 100.0f;
 	public GameObject droidModel;
+	public AudioClip droidDeathSound;
 	
 	float currentCriticalChance;
 	
@@ -35,6 +36,7 @@ public class DroidLife : MonoBehaviour {
 		droidModel.transform.DetachChildren();
 		Destroy(gameObject.GetComponent<PlayerDroidController>());
 		Destroy(gameObject.GetComponent<CharacterController>());
+		AudioSource.PlayClipAtPoint(droidDeathSound, transform.position);
 		
 		if( Spawner != null) Spawner.DroidDied(gameObject);
 	}
