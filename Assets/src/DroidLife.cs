@@ -5,8 +5,10 @@ public class DroidLife : MonoBehaviour {
 	public float criticalBaseChance = 0.0f;
 	public float deathForce = 100.0f;
 	public GameObject droidModel;
-
+	
 	float currentCriticalChance;
+	
+	public NetworkedPlayerSpawner Spawner { get; set; }
 	
 	void Start() {
 		currentCriticalChance = criticalBaseChance;
@@ -29,15 +31,20 @@ public class DroidLife : MonoBehaviour {
 	
 	void Die() {
 		Debug.Log("*****Dead!*****");
+		ScatterParts();
+		droidModel.transform.DetachChildren();
+		Destroy(gameObject.GetComponent<PlayerDroidController>());
+		Destroy(gameObject.GetComponent<CharacterController>());
+		
+		if( Spawner != null) Spawner.DroidDied(gameObject);
+	}
+	
+	private void ScatterParts() {
 		foreach (Transform child in droidModel.transform) {
-//			if (droidModel.transform == child) continue;
-//			if (droidModel.transform.parent == child) continue;
-			
-			Debug.Log(child.gameObject.name);
 			// Can't do this here, because it mutates the enumerable!
 			//child.parent = null;
 			var meshFilter = child.gameObject.GetComponent<MeshFilter>();
-			if (meshFilter == null) { Debug.Log("Skipping " + child.gameObject.name); continue;}
+			if (meshFilter == null) continue;
 			var rigidbody = child.gameObject.AddComponent<Rigidbody>();
 			var collider = child.gameObject.AddComponent<MeshCollider>();
 			collider.sharedMesh = meshFilter.sharedMesh;
@@ -45,14 +52,11 @@ public class DroidLife : MonoBehaviour {
 			rigidbody.useGravity = true;
 			rigidbody.mass = 1.0f;
 			
-			var center = droidModel.transform.position;
-			var outwardsDirection = child.transform.position - center;
-			rigidbody.AddForce(outwardsDirection * deathForce);
+			var angle = Random.Range(-Mathf.PI, Mathf.PI);
+			var x = Mathf.Sin(angle);
+			var y = Mathf.Cos(angle);
+			var direction = new Vector3(x, y, 0.0f);
+			rigidbody.AddForce(deathForce * direction);
 		}
-		droidModel.transform.DetachChildren();
-		Destroy(gameObject.GetComponent<PlayerDroidController>());
-		Destroy(gameObject.GetComponent<CharacterController>());
-		
-		
 	}
 }
