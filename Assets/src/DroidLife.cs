@@ -28,15 +28,19 @@ public class DroidLife : MonoBehaviour {
 		
 		AudioSource.PlayClipAtPoint(damager.damageSound, transform.position);
 		
-		var criticalChance = damager.criticalChance + currentCriticalChance;
-		if (Random.value <= criticalChance) {
-			Die();
-		} else {
-			currentCriticalChance += damager.criticalModification;
+		if (networkView.isMine) {
+			var criticalChance = damager.criticalChance + currentCriticalChance;
+			if (Random.value <= criticalChance) {
+				networkView.RPC("Die", RPCMode.Others);
+				Die();
+			} else {
+				currentCriticalChance += damager.criticalModification;
+			}
 		}
 		Debug.Log("Chance: " + currentCriticalChance);
 	}
 	
+	[RPC]
 	void Die() {
 		Debug.Log("*****Dead!*****");
 		ScatterParts();
