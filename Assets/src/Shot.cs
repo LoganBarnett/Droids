@@ -5,9 +5,11 @@ public class Shot : MonoBehaviour {
 	public float speed = 10.0f;
 	public float damage = 5.0f;
 	public float lifeInSeconds = 10.0f;
+	public float syncPositionDistanceThreshold = 1.0f;
 	
 	CharacterController controller;
 	Vector3 movementVector;
+	bool isDead = false;
 	
 	void Start() {
 		movementVector = transform.forward * speed;
@@ -16,7 +18,9 @@ public class Shot : MonoBehaviour {
 	
 	IEnumerator Expire() {
 		yield return new WaitForSeconds(lifeInSeconds);
-		Network.Destroy(gameObject);
+		if (gameObject != null && !isDead && networkView.isMine) {
+			Network.Destroy(gameObject);
+		}
 	}
 	
 	void Update() {
@@ -25,7 +29,9 @@ public class Shot : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider collider) {
 		if (networkView.isMine) {
+//			Debug.Log("Destroying from collision: " + networkView.viewID);
 			Network.Destroy(gameObject);
+			isDead = true;
 		}
 	}
 	
@@ -45,7 +51,9 @@ public class Shot : MonoBehaviour {
 			stream.Serialize(ref position);
 			stream.Serialize(ref rotation);
 			
-			transform.position = position;
+			if (Vector3.Distance(transform.position, position) > syncPositionDistanceThreshold) {
+				transform.position = position;
+			}
 			transform.rotation = rotation;
 		}
 	}

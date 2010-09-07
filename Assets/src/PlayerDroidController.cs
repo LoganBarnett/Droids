@@ -19,6 +19,7 @@ public class PlayerDroidController : MonoBehaviour {
 	public GameObject shootPosition;
 	public GameObject shotPrefab;
 	public AudioClip shotSound;
+	public float syncDistanceThreshold = 1.0f;
 	
 	bool useNetworkInput;
 	
@@ -128,7 +129,7 @@ public class PlayerDroidController : MonoBehaviour {
 		if (stream.isWriting) {
 			var position = transform.position;
 			var rotation = transform.rotation;
-			var isDroidJumping = IsDroidJumping;
+//			var isDroidJumping = IsDroidJumping;
 			
 			stream.Serialize(ref movementSpeed);
 			stream.Serialize(ref currentHorizontalMovement);
@@ -147,7 +148,9 @@ public class PlayerDroidController : MonoBehaviour {
 			stream.Serialize(ref position);
 			stream.Serialize(ref rotation);
 			
-			transform.position = position;
+			if (Vector3.Distance(position, transform.position) > syncDistanceThreshold) {
+				transform.position = position;
+			}
 			transform.rotation = rotation;
 			
 			useNetworkInput = true;
@@ -227,7 +230,7 @@ public class PlayerDroidController : MonoBehaviour {
 	}
 	
 	void Shoot() {
-		var shot = (GameObject)Network.Instantiate(shotPrefab, shootPosition.transform.position, shootPosition.transform.rotation, 0);
+		Network.Instantiate(shotPrefab, shootPosition.transform.position, shootPosition.transform.rotation, 0);
 		AudioSource.PlayClipAtPoint(shotSound, shootPosition.transform.position);
 		timeSinceLastShot = Time.time;
 	}

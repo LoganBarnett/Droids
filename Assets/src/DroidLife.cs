@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Linq;
+using System.Collections.Generic;
 
 public class DroidLife : MonoBehaviour {
 	public float criticalBaseChance = 0.0f;
@@ -52,7 +53,12 @@ public class DroidLife : MonoBehaviour {
 		if( Spawner != null) Spawner.DroidDied(gameObject);
 	}
 	
+	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
+		stream.Serialize(ref currentCriticalChance);
+	}
+	
 	private void ScatterParts() {
+		var parts = new List<GameObject>();
 		foreach (Transform child in droidModel.transform) {
 			// Can't do this here, because it mutates the enumerable!
 			//child.parent = null;
@@ -76,15 +82,21 @@ public class DroidLife : MonoBehaviour {
 //			foreach( var controller in Spawner.Droids.Select( d => d.GetComponent<CharacterController>() )) {				
 //				Physics.IgnoreCollision(controller, collider, true);
 //			}
-			child.transform.position = child.transform.position + new Vector3(0.0f, 0.0f, 10.0f);
-			StartCoroutine(FadeParts(child.gameObject));
+			child.position = child.position + new Vector3(0.0f, 0.0f, 10.0f);
+			parts.Add(child.gameObject);
 		}
+		StartCoroutine(FadeParts(parts));
 	}
 	
-	IEnumerator FadeParts(GameObject part) {
+	IEnumerator FadeParts(List<GameObject> parts) {
 		yield return new WaitForSeconds(partFadeawayInSeconds);
 		// TODO: Make alpha fadeout on part before destroying
-		Destroy(part);
-		Network.Destroy(gameObject);
+		foreach (var part in parts) { Destroy(part); }
+		
+		yield return new WaitForSeconds(1.0f);
+		
+		if (networkView.isMine) {
+			Network.Destroy(gameObject);
+		}
 	}
 }
