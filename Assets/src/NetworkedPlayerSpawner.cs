@@ -27,6 +27,7 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	
 	public void DroidDied(GameObject droid) {
 		if (droid.networkView.isMine) {
+			Camera.main.transform.parent = droid.transform;
 			StartCoroutine(DelayedDroidRespawn(respawnDelayInSeconds));
 		}
 		Droids.Remove(droid);
@@ -63,7 +64,7 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	}
 	
 	Transform GetSpawnPosition() {
-		return spawnPoints[Random.Range(0, spawnPoints.Length - 1)];
+		return spawnPoints[Random.Range(0, spawnPoints.Length)];
 	}
 	
 	
@@ -73,6 +74,8 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 		var droid = (GameObject)Network.Instantiate(playerCharacterPrefab, spawnPosition.position, spawnPosition.rotation, 0);
 		droid.GetComponent<DroidLife>().Spawner = this;
 		Droids.Add(droid);
+		Camera.main.transform.position = new Vector3(droid.transform.position.x, droid.transform.position.y, Camera.main.transform.position.z);
+		Camera.main.transform.parent = droid.transform;
 	}
 }
 

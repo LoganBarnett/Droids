@@ -85,5 +85,6 @@ public class DroidLife : MonoBehaviour {
 		yield return new WaitForSeconds(partFadeawayInSeconds);
 		// TODO: Make alpha fadeout on part before destroying
 		Destroy(part);
+		Network.Destroy(gameObject);
 	}
 }

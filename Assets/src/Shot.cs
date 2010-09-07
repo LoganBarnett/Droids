@@ -4,13 +4,19 @@ using System.Collections;
 public class Shot : MonoBehaviour {
 	public float speed = 10.0f;
 	public float damage = 5.0f;
+	public float lifeInSeconds = 10.0f;
 	
 	CharacterController controller;
 	Vector3 movementVector;
 	
 	void Start() {
 		movementVector = transform.forward * speed;
-		
+		StartCoroutine(Expire());
+	}
+	
+	IEnumerator Expire() {
+		yield return new WaitForSeconds(lifeInSeconds);
+		Network.Destroy(gameObject);
 	}
 	
 	void Update() {

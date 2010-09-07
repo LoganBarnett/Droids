@@ -33,6 +33,10 @@ public class ConnectorMenu : MonoBehaviour {
 	
 	void OnGUI() {
 		GUILayout.BeginVertical();
+	    GUILayout.BeginHorizontal();
+		GUILayout.Label("DROIDS");
+		GUILayout.EndHorizontal();
+
 		GUILayout.BeginHorizontal();
 		if (GUILayout.Button("Start a game"))
 		{
@@ -62,7 +66,17 @@ public class ConnectorMenu : MonoBehaviour {
 //			
 //		}
 		GUILayout.EndHorizontal();
-		
 		GUILayout.EndVertical();
+		
+		var instructionWidth = 200.0f;
+		GUILayout.BeginArea(new Rect(Screen.width - instructionWidth, 0.0f, instructionWidth, Screen.height));
+		GUILayout.BeginVertical();
+		GUILayout.Label("Instructions:");
+		GUILayout.Label("Use the arrow keys to move");
+		GUILayout.Label("Press space to jump");
+		GUILayout.Label("Press shift to shoot");
+		GUILayout.EndVertical();
+		GUILayout.EndArea();
+		
 	}
 }
