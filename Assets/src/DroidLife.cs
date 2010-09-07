@@ -36,9 +36,15 @@ public class DroidLife : MonoBehaviour {
 				Die();
 			} else {
 				currentCriticalChance += damager.criticalModification;
+				networkView.RPC("SetCrit", RPCMode.Others, currentCriticalChance);
 			}
 		}
 		Debug.Log("Chance: " + currentCriticalChance);
+	}
+	
+	[RPC]
+	void SetCrit(float chance) {
+		currentCriticalChance = chance;
 	}
 	
 	[RPC]
