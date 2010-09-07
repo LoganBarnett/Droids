@@ -105,4 +105,9 @@ public class DroidLife : MonoBehaviour {
 			Network.Destroy(gameObject);
 		}
 	}
+	
+	void OnPlayerDisconnected(NetworkPlayer player) {
+		Network.RemoveRPCs(player);
+    	Network.DestroyPlayerObjects(player);
+	}
 }
