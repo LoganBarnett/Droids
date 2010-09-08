@@ -20,6 +20,7 @@ public class Shot : MonoBehaviour {
 		yield return new WaitForSeconds(lifeInSeconds);
 		if (gameObject != null && !isDead && networkView.isMine) {
 			Network.Destroy(gameObject);
+			Network.RemoveRPCs(networkView.viewID);
 		}
 	}
 	
@@ -31,6 +32,7 @@ public class Shot : MonoBehaviour {
 		if (networkView.isMine) {
 //			Debug.Log("Destroying from collision: " + networkView.viewID);
 			Network.Destroy(gameObject);
+			Network.RemoveRPCs(networkView.viewID);
 			isDead = true;
 		}
 	}

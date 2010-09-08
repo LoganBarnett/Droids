@@ -103,6 +103,7 @@ public class DroidLife : MonoBehaviour {
 		
 		if (networkView.isMine) {
 			Network.Destroy(gameObject);
+			Network.RemoveRPCs(networkView.viewID);
 		}
 	}
 	
