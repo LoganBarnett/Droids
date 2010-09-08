@@ -23,20 +23,16 @@ public class DroidLife : MonoBehaviour {
 		Spawner.RegisterDroid(gameObject);
 	}
 	
-	void OnTriggerEnter(Collider collider) {
-		var damager = collider.GetComponent<DroidDamager>();
-		if (damager == null) return;
-		
-		AudioSource.PlayClipAtPoint(damager.damageSound, transform.position);
-		
+	[RPC]
+	void TakeDamage(float criticalChance, float criticalModification) {
 		if (networkView.isMine) {
-			var criticalChance = damager.criticalChance + currentCriticalChance;
-			if (Random.value <= criticalChance) {
+			var totalCriticalChance = criticalChance + currentCriticalChance;
+			if (Random.value <= totalCriticalChance) {
 				networkView.RPC("Die", RPCMode.Others);
 				Die();
 			} else {
-				currentCriticalChance += damager.criticalModification;
-				networkView.RPC("SetCrit", RPCMode.Others, currentCriticalChance);
+				currentCriticalChance += criticalModification;
+				networkView.RPC("SetCrit", RPCMode.All, currentCriticalChance);
 			}
 		}
 		Debug.Log("Chance: " + currentCriticalChance);

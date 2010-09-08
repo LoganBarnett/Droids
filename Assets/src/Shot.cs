@@ -30,7 +30,6 @@ public class Shot : MonoBehaviour {
 	
 	void OnTriggerEnter(Collider collider) {
 		if (networkView.isMine) {
-//			Debug.Log("Destroying from collision: " + networkView.viewID);
 			Network.Destroy(gameObject);
 			Network.RemoveRPCs(networkView.viewID);
 			isDead = true;
