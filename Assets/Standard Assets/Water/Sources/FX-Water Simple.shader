@@ -1,3 +1,6 @@
+// Upgrade NOTE: replaced 'PositionFog()' with multiply of UNITY_MATRIX_MVP by position
+// Upgrade NOTE: replaced 'V2F_POS_FOG' with 'float4 pos : SV_POSITION'
+
 Shader "FX/Water (simple)" {
 Properties {
 	_horizonColor ("Horizon color", COLOR)  = ( .172 , .463 , .435 , 0)
@@ -27,7 +30,7 @@ struct appdata {
 };
 
 struct v2f {
-	V2F_POS_FOG;
+	float4 pos : SV_POSITION;
 	float2 bumpuv[2] : TEXCOORD0;
 	float3 viewDir : TEXCOORD2;
 };
@@ -37,7 +40,7 @@ v2f vert(appdata v)
 	v2f o;
 	float4 s;
 
-	PositionFog( v.vertex, o.pos, o.fog );
+	o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 
 	// scroll bump waves
 	float4 temp;
@@ -90,10 +93,13 @@ ENDCG
 // -----------------------------------------------------------
 // Radeon 9000
 
-Subshader {
+#warning Upgrade NOTE: SubShader commented out because of manual shader assembly
+/*Subshader {
 	Tags { "RenderType"="Opaque" }
 	Pass {
 CGPROGRAM
+// Upgrade NOTE: excluded shader from OpenGL ES 2.0 because it does not contain a surface program or both vertex and fragment programs.
+#pragma exclude_renderers gles
 #pragma vertex vert
 // just define 'vert' as a vertex shader, the code is included
 // from the section on top
@@ -130,7 +136,7 @@ EndPass;
 		SetTexture [_BumpMap] {}
 		SetTexture [_ColorControl] {}
 	}
-}
+}*/
 
 // -----------------------------------------------------------
 //  Old cards

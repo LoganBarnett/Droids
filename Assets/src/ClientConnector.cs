@@ -82,13 +82,13 @@ public class ClientConnector : MonoBehaviour {
 	
 	void ConnectTo(HostData hostData) {
 		// Set NAT functionality based on the host information
-		Network.useNat = hostData.useNat;
-		if (Network.useNat)
-			log.Add("Using Nat punchthrough to connect to host");
-		else
-			log.Add("Connecting directly to host: " + string.Join(" ", hostData.ip));
+//		Network.useNat = hostData.useNat;
+//		if (Network.useNat)
+//			log.Add("Using Nat punchthrough to connect to host");
+//		else
+//			log.Add("Connecting directly to host: " + string.Join(" ", hostData.ip));
 		Network.Connect(hostData.ip, hostData.port);
-		Application.LoadLevel("Test");
+		Application.LoadLevel(Networking.STARTING_LEVEL);
 	}
 }
 

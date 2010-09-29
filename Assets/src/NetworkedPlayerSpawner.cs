@@ -7,6 +7,8 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	public GameObject playerCharacterPrefab;
 	public GameObject spawnParent;
 	public float respawnDelayInSeconds = 5.0f;
+	public List<Color> playerColors = new List<Color>();
+	
 	
 	
 	private Transform[] spawnPoints;
@@ -76,6 +78,18 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 		Droids.Add(droid);
 		Camera.main.transform.position = new Vector3(droid.transform.position.x, droid.transform.position.y, Camera.main.transform.position.z);
 		Camera.main.transform.parent = droid.transform;
+		
+		var childRenderers = droid.GetComponent<PlayerDroidController>().model.GetComponentsInChildren<Renderer>();
+		var color = UseColor();
+		foreach (var childRenderer in childRenderers) {
+			childRenderer.sharedMaterial.SetColor("_Color", color);
+		}
+	}
+	
+	private Color UseColor() {
+		var color = playerColors[0];
+		playerColors.RemoveAt(0);
+		return color;
 	}
 }
 

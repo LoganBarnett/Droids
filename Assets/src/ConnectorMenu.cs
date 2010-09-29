@@ -18,7 +18,7 @@ public class ConnectorMenu : MonoBehaviour {
 		    Application.platform != RuntimePlatform.WindowsWebPlayer) {
 			var dns = new WWW("http://checkip.dyndns.org");
 			while (!dns.isDone && string.IsNullOrEmpty(dns.error)) {}
-			var html = dns.data;
+			var html = dns.text;
 			var startIndex = html.IndexOf(": ") + 1;
 			var endIndex = html.IndexOf("</body>");
 			externalIp = html.Substring(startIndex, endIndex - startIndex);
