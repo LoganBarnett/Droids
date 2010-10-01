@@ -10,10 +10,11 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	public List<Color> playerColors = new List<Color>();
 	
 	
-	
+	private int lastColorIndex = 0;
 	private Transform[] spawnPoints;
 	private GameObject playerCharacter;
 	public List<GameObject> Droids {get; private set;}
+	public Dictionary<string, Color> networkPlayerColors = new Dictionary<string, Color>();
 	
 	
 	private NetworkPlayer player;
@@ -28,41 +29,34 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	}
 	
 	public void DroidDied(GameObject droid) {
+		Droids.Remove(droid);
 		if (droid.networkView.isMine) {
 			Camera.main.transform.parent = droid.transform;
 			StartCoroutine(DelayedDroidRespawn(respawnDelayInSeconds));
 		}
-		Droids.Remove(droid);
 	}
 	
 	IEnumerator DelayedDroidRespawn(float delayInSeconds) {
 		yield return new WaitForSeconds(delayInSeconds);
-		SpawnDroid();
+		SpawnDroid(GetColorForPlayer(Network.player.guid));
 	}
 	
 	void Start () {
 		Droids = new List<GameObject>();
 		spawnPoints = spawnParent.GetComponentsInChildren<Transform>().Where(s => s.gameObject != spawnParent).ToArray();
 		Debug.Log("points: " + spawnPoints.Length);
-//		Debug.Log("Connected? " + (Network.isClient || Network.isServer));
-//		Debug.Log("Level started, creating my player");
 		if (Network.isServer) {
-			SpawnDroid();
+			SpawnDroid(GetColorForPlayer(Network.player.guid));
 		}
-	}
-	
-	void OnPlayerConnected(NetworkPlayer player) {
-		Debug.Log("A player connected, creating their character");
 	}
 	
 	void OnServerInitialized() {
 		Debug.Log("Started server, spawning my character");
-		SpawnDroid();
+		SpawnDroid(GetColorForPlayer(Network.player.guid));
 	}
 	
 	void OnConnectedToServer() {
-		Debug.Log("Connected to server, spawning my character");
-		SpawnDroid();
+		Debug.Log("Connected to server");
 	}
 	
 	Transform GetSpawnPosition() {
@@ -70,8 +64,17 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	}
 	
 	
+	[RPC]
+	void SpawnDroid(float r, float g, float b, float a) {
+		SpawnDroid(new Color(r, g, b, a));
+	}
 	
-	private void SpawnDroid() {
+	private void SpawnDroid(Color color) {
+		if (Droids.Any(d => d.networkView.isMine)) {
+			Debug.Log("Attempted to spawn duplicate droid.");
+			return;
+		}
+		
 		var spawnPosition = GetSpawnPosition();
 		var droid = (GameObject)Network.Instantiate(playerCharacterPrefab, spawnPosition.position, spawnPosition.rotation, 0);
 		droid.GetComponent<DroidLife>().Spawner = this;
@@ -79,17 +82,27 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 		Camera.main.transform.position = new Vector3(droid.transform.position.x, droid.transform.position.y, Camera.main.transform.position.z);
 		Camera.main.transform.parent = droid.transform;
 		
-		var childRenderers = droid.GetComponent<PlayerDroidController>().model.GetComponentsInChildren<Renderer>();
-		var color = UseColor();
-		foreach (var childRenderer in childRenderers) {
-			childRenderer.sharedMaterial.SetColor("_Color", color);
-		}
+		droid.GetComponent<DroidColor>().SetColor(color);
 	}
 	
-	private Color UseColor() {
-		var color = playerColors[0];
-		playerColors.RemoveAt(0);
+	void OnPlayerConnected(NetworkPlayer player) {
+		var color = GetColorForPlayer(player.guid);
+		networkView.RPC("SpawnDroid", player, color.r, color.g, color.b, color.a);
+	}
+	
+	public Color UseColor() {
+		var color = playerColors[lastColorIndex++];
+		if (lastColorIndex >= playerColors.Count) lastColorIndex = 0;
 		return color;
+	}
+	
+	public Color GetColorForPlayer(string playerGuid) {
+		if (networkPlayerColors.ContainsKey(playerGuid)) {
+			return networkPlayerColors[playerGuid];
+		} else {
+			var color = networkPlayerColors[playerGuid] = UseColor();
+			return color;
+		}
 	}
 }
 

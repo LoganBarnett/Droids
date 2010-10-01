@@ -28,12 +28,14 @@ public class Shot : MonoBehaviour {
 		transform.Translate(movementVector * Time.deltaTime, Space.World);
 	}
 	
-	void OnTriggerEnter(Collider collider) {
-		if (networkView.isMine) {
-			Network.Destroy(gameObject);
-			Network.RemoveRPCs(networkView.viewID);
-			isDead = true;
-		}
+	void OnTriggerEnter(Collider c) {
+		Debug.Log("collision!");
+		Collide();
+	}
+	
+	void OnCollisionEnter() {
+		Debug.Log("collision!");
+		Collide();
 	}
 	
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
@@ -56,6 +58,14 @@ public class Shot : MonoBehaviour {
 				transform.position = position;
 			}
 			transform.rotation = rotation;
+		}
+	}
+	
+	void Collide() {
+		if (networkView.isMine) {
+			Network.Destroy(gameObject);
+			Network.RemoveRPCs(networkView.viewID);
+			isDead = true;
 		}
 	}
 }
