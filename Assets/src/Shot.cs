@@ -29,12 +29,12 @@ public class Shot : MonoBehaviour {
 	}
 	
 	void OnTriggerEnter(Collider c) {
-		Debug.Log("collision!");
+		Debug.Log("collision with " + c.name);
 		Collide();
 	}
 	
-	void OnCollisionEnter() {
-		Debug.Log("collision!");
+	void OnCollisionEnter(Collision c) {
+		Debug.Log("collision with " + c.gameObject.name);
 		Collide();
 	}
 	

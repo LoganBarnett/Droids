@@ -48,8 +48,9 @@ public class DroidLife : MonoBehaviour {
 		Debug.Log("*****Dead!*****");
 		ScatterParts();
 		droidModel.transform.DetachChildren();
-		Destroy(gameObject.GetComponent<PlayerDroidController>());
-		Destroy(gameObject.GetComponent<CharacterController>());
+		Destroy(GetComponent<PlayerDroidController>());
+		Destroy(GetComponent<CharacterController>());
+		Destroy(GetComponent<CapsuleCollider>());
 		AudioSource.PlayClipAtPoint(droidDeathSound, transform.position);
 		
 		if( Spawner != null) Spawner.DroidDied(gameObject);
@@ -61,9 +62,8 @@ public class DroidLife : MonoBehaviour {
 	
 	private void ScatterParts() {
 		var parts = new List<GameObject>();
+		// NOTE: Do NOT unparent the children, as it breaks the rigidbody behavior.
 		foreach (Transform child in droidModel.transform) {
-			// Can't do this here, because it mutates the enumerable!
-			//child.parent = null;
 			var meshFilter = child.gameObject.GetComponent<MeshFilter>();
 			if (meshFilter == null) continue;
 			var rigidbody = child.gameObject.AddComponent<Rigidbody>();
@@ -84,6 +84,8 @@ public class DroidLife : MonoBehaviour {
 //			foreach( var controller in Spawner.Droids.Select( d => d.GetComponent<CharacterController>() )) {				
 //				Physics.IgnoreCollision(controller, collider, true);
 //			}
+			
+			
 			child.position = child.position + new Vector3(0.0f, 0.0f, 10.0f);
 			parts.Add(child.gameObject);
 		}
@@ -104,6 +106,7 @@ public class DroidLife : MonoBehaviour {
 	}
 	
 	void OnPlayerDisconnected(NetworkPlayer player) {
+		Spawner.Droids.Remove(gameObject);
 		Network.RemoveRPCs(player);
     	Network.DestroyPlayerObjects(player);
 	}
