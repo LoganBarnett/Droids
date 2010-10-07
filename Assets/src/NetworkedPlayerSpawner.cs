@@ -82,15 +82,19 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 		Camera.main.transform.position = new Vector3(droid.transform.position.x, droid.transform.position.y, Camera.main.transform.position.z);
 		Camera.main.transform.parent = droid.transform;
 		
+		Debug.Log("Setting color to " + color);
 		droid.GetComponent<DroidColor>().SetColor(color);
 	}
 	
 	void OnPlayerConnected(NetworkPlayer player) {
+		if (Network.isClient) return;
+		
 		var color = GetColorForPlayer(player.guid);
 		networkView.RPC("SpawnDroid", player, color.r, color.g, color.b, color.a);
 	}
 	
 	public Color UseColor() {
+		if (Network.isClient) throw new System.Exception("Client cannot UseColor!");
 		var color = playerColors[lastColorIndex++];
 		if (lastColorIndex >= playerColors.Count) lastColorIndex = 0;
 		return color;
