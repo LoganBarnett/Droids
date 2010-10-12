@@ -5,7 +5,12 @@ using System.Linq;
 
 public class DroidColor : MonoBehaviour {
 //	List<Color> colors;
-	Color droidColor = Color.black;
+	Color playerColor = Color.black;
+	
+	public Color PlayerColor {
+		get { return playerColor; }
+		set { playerColor = value; }
+	}
 	
 	// Use this for initialization
 	void Start () {
@@ -34,21 +39,21 @@ public class DroidColor : MonoBehaviour {
 		foreach (var childRenderer in childRenderers) {
 			childRenderer.material.SetColor("_Color", color);
 		}
-		droidColor = color;
+		playerColor = color;
 	}
 	
 	
 	void OnPlayerConnected(NetworkPlayer player) {
 		if (Network.isClient) return;
-		networkView.RPC("SetColor", player, droidColor.r, droidColor.g, droidColor.b, droidColor.a);
+		networkView.RPC("SetColor", player, playerColor.r, playerColor.g, playerColor.b, playerColor.a);
 	}
 	
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
 		if (stream.isWriting) {
-			stream.Serialize(ref droidColor.r);
-			stream.Serialize(ref droidColor.g);
-			stream.Serialize(ref droidColor.b);
-			stream.Serialize(ref droidColor.a);
+			stream.Serialize(ref playerColor.r);
+			stream.Serialize(ref playerColor.g);
+			stream.Serialize(ref playerColor.b);
+			stream.Serialize(ref playerColor.a);
 		}
 		else {
 			Color newColor = Color.black;

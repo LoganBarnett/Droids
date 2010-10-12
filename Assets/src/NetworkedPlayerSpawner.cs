@@ -30,15 +30,26 @@ public class NetworkedPlayerSpawner : MonoBehaviour {
 	
 	public void DroidDied(GameObject droid) {
 		Droids.Remove(droid);
-		if (droid.networkView.isMine) {
-			Camera.main.transform.parent = droid.transform;
-			StartCoroutine(DelayedDroidRespawn(respawnDelayInSeconds));
+		
+		if (droid.networkView.isMine) Camera.main.transform.parent = droid.transform;
+		
+		if (Network.isServer) {
+			
+			StartCoroutine(DelayedDroidRespawn(respawnDelayInSeconds, droid.networkView.owner));
 		}
 	}
 	
-	IEnumerator DelayedDroidRespawn(float delayInSeconds) {
+	IEnumerator DelayedDroidRespawn(float delayInSeconds, NetworkPlayer player) {
 		yield return new WaitForSeconds(delayInSeconds);
-		SpawnDroid(GetColorForPlayer(Network.player.guid));
+		
+		var color = GetColorForPlayer(player.guid);
+		Debug.Log(string.Format("Telling player '{0}' to respawn", player.guid));
+		Debug.Log(string.Format("I am player    '{0}'", Network.player.guid));
+		if (Network.player.guid == player.guid) {
+			SpawnDroid(color);
+		} else {
+			networkView.RPC("SpawnDroid", player, color.r, color.g, color.b, color.a);
+		}
 	}
 	
 	void Start () {
