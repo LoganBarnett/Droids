@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections;
 
 
-public class SpawnGizmo : MonoBehaviour {
+public class DroidSpawnGizmo : MonoBehaviour {
 	[DrawGizmo(GizmoType.NotSelected | GizmoType.Pickable)]
 	static void RenderLightGizmo(GameObject gameObject, GizmoType gizmoType) {
 		if (gameObject.CompareTag("SpawnPoint")) {
