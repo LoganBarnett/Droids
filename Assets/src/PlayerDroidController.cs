@@ -43,6 +43,7 @@ public class PlayerDroidController : MonoBehaviour {
 	
 	// shooting related
 	float timeSinceLastShot;
+	public GameObject lightningBolt;
 	
 	bool IsJumpReady { get { return controller.isGrounded; } }
 	
@@ -72,6 +73,9 @@ public class PlayerDroidController : MonoBehaviour {
 		controller = GetComponent<CharacterController>();
 		jumpThrusterEmitters = jumpThrusterEmitterContainer.GetComponentsInChildren<ParticleEmitter>().Where(p => p.gameObject != jumpThrusterEmitterContainer).ToArray();
 		jumpThrusterSoundSource = jumpThrusterSound.GetComponent<AudioSource>();
+		
+		lightningBolt.GetComponent<LightningBolt>();
+		lightningBolt.active = false;
 	}
 	
 	float GetVerticalMovement() {
@@ -117,8 +121,14 @@ public class PlayerDroidController : MonoBehaviour {
 		ShowJumpThrusters();
 		PlayJumpThrusterSound();
 		
+		
 		if (!useNetworkInput && Input.GetButton("Fire1")) {
 			TryShoot();
+			lightningBolt.active = true;
+		}
+		else
+		{
+			lightningBolt.active = false;
 		}
 		
 		currentHorizontalMovement = x;
@@ -230,8 +240,8 @@ public class PlayerDroidController : MonoBehaviour {
 	}
 	
 	void Shoot() {
-		Network.Instantiate(shotPrefab, shootPosition.transform.position, shootPosition.transform.rotation, 0);
-		AudioSource.PlayClipAtPoint(shotSound, shootPosition.transform.position);
-		timeSinceLastShot = Time.time;
+//		Network.Instantiate(shotPrefab, shootPosition.transform.position, shootPosition.transform.rotation, 0);
+//		AudioSource.PlayClipAtPoint(shotSound, shootPosition.transform.position);
+//		timeSinceLastShot = Time.time;
 	}
 }
