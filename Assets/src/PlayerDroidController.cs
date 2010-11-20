@@ -227,15 +227,14 @@ public class PlayerDroidController : MonoBehaviour {
 	bool TryShoot(out GameObject closestStation) {
 		closestStation = null;
 		var stations = GameObject.FindGameObjectsWithTag("Station");
-		Debug.Log(stations.Count() == 0);
 		if (stations.Count() == 0) return false;
+		
 		var stationDistances = stations.Select(s => {
 			var distance = Vector3.Distance(s.transform.position, transform.position);
 			return new { station = s, distance = distance };
 		});
 		var closestStationDistance = stationDistances.OrderBy(sd => sd.distance).ToList()[0];
 		closestStation = closestStationDistance.station;
-		Debug.Log(closestStationDistance.distance);
 
 		return closestStationDistance.distance < transferDistance;
 	}
