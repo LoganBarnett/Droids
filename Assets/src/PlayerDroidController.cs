@@ -20,6 +20,7 @@ public class PlayerDroidController : MonoBehaviour {
 	public GameObject shotPrefab;
 	public AudioClip shotSound;
 	public float syncDistanceThreshold = 1.0f;
+	public float transferDistance = 10f;
 	
 	bool useNetworkInput;
 	
@@ -123,8 +124,13 @@ public class PlayerDroidController : MonoBehaviour {
 		
 		
 		if (!useNetworkInput && Input.GetButton("Fire1")) {
-			TryShoot();
-			lightningBolt.active = true;
+			GameObject station;
+			if (TryShoot(out station)) {
+				lightningBolt.GetComponent<LightningBolt>().target = station.transform;
+				lightningBolt.active = true;
+			} else {
+				lightningBolt.active = false;
+			}
 		}
 		else
 		{
@@ -218,10 +224,20 @@ public class PlayerDroidController : MonoBehaviour {
 		}
 	}
 	
-	void TryShoot() {
-		if (IsValidShootingRotation() && IsValidShootingTime()) {
-			Shoot();
-		}
+	bool TryShoot(out GameObject closestStation) {
+		closestStation = null;
+		var stations = GameObject.FindGameObjectsWithTag("Station");
+		Debug.Log(stations.Count() == 0);
+		if (stations.Count() == 0) return false;
+		var stationDistances = stations.Select(s => {
+			var distance = Vector3.Distance(s.transform.position, transform.position);
+			return new { station = s, distance = distance };
+		});
+		var closestStationDistance = stationDistances.OrderBy(sd => sd.distance).ToList()[0];
+		closestStation = closestStationDistance.station;
+		Debug.Log(closestStationDistance.distance);
+
+		return closestStationDistance.distance < transferDistance;
 	}
 	
 	bool IsValidShootingTime() {
@@ -239,9 +255,4 @@ public class PlayerDroidController : MonoBehaviour {
 		return withinLeft || withinRight;
 	}
 	
-	void Shoot() {
-//		Network.Instantiate(shotPrefab, shootPosition.transform.position, shootPosition.transform.rotation, 0);
-//		AudioSource.PlayClipAtPoint(shotSound, shootPosition.transform.position);
-//		timeSinceLastShot = Time.time;
-	}
 }
