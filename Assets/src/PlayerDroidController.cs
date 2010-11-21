@@ -14,13 +14,12 @@ public class PlayerDroidController : MonoBehaviour {
 	public GameObject model;
 	public GameObject jumpThrusterEmitterContainer;
 	public GameObject jumpThrusterSound;
-	public float shootingRate = 1.0f;
-	public float shootThresholdAngle = 0.1f;
-	public GameObject shootPosition;
-	public GameObject shotPrefab;
-	public AudioClip shotSound;
+//	public float shootingRate = 1.0f;
+//	public float shootThresholdAngle = 0.1f;
+//	public GameObject shootPosition;
+//	public GameObject shotPrefab;
+//	public AudioClip shotSound;
 	public float syncDistanceThreshold = 1.0f;
-	public float transferDistance = 10f;
 	
 	bool useNetworkInput;
 	
@@ -43,8 +42,7 @@ public class PlayerDroidController : MonoBehaviour {
 	AudioSource jumpThrusterSoundSource;
 	
 	// shooting related
-	float timeSinceLastShot;
-	public GameObject lightningBolt;
+//	float timeSinceLastShot;
 	
 	bool IsJumpReady { get { return controller.isGrounded; } }
 	
@@ -74,9 +72,6 @@ public class PlayerDroidController : MonoBehaviour {
 		controller = GetComponent<CharacterController>();
 		jumpThrusterEmitters = jumpThrusterEmitterContainer.GetComponentsInChildren<ParticleEmitter>().Where(p => p.gameObject != jumpThrusterEmitterContainer).ToArray();
 		jumpThrusterSoundSource = jumpThrusterSound.GetComponent<AudioSource>();
-		
-		lightningBolt.GetComponent<LightningBolt>();
-		lightningBolt.active = false;
 	}
 	
 	float GetVerticalMovement() {
@@ -121,21 +116,6 @@ public class PlayerDroidController : MonoBehaviour {
 		FaceFromMovement(x);
 		ShowJumpThrusters();
 		PlayJumpThrusterSound();
-		
-		
-		if (!useNetworkInput && Input.GetButton("Fire1")) {
-			GameObject station;
-			if (TryShoot(out station)) {
-				lightningBolt.GetComponent<LightningBolt>().target = station.transform;
-				lightningBolt.active = true;
-			} else {
-				lightningBolt.active = false;
-			}
-		}
-		else
-		{
-			lightningBolt.active = false;
-		}
 		
 		currentHorizontalMovement = x;
 		currentVerticalMovement = y;
@@ -214,34 +194,20 @@ public class PlayerDroidController : MonoBehaviour {
 		}
 	}
 	
-	bool TryShoot(out GameObject closestStation) {
-		closestStation = null;
-		var stations = GameObject.FindGameObjectsWithTag("Station");
-		if (stations.Count() == 0) return false;
-		
-		var stationDistances = stations.Select(s => {
-			var distance = Vector3.Distance(s.transform.position, transform.position);
-			return new { station = s, distance = distance };
-		});
-		var closestStationDistance = stationDistances.OrderBy(sd => sd.distance).ToList()[0];
-		closestStation = closestStationDistance.station;
-
-		return closestStationDistance.distance < transferDistance;
-	}
-	
-	bool IsValidShootingTime() {
-		return timeSinceLastShot + (1.0f / shootingRate) < Time.time; 
-	}
-	
-	bool IsValidShootingRotation() {
-		var yRotation = model.transform.rotation.eulerAngles.y;
-
-		var withinLeft =  yRotation > (180.0f - shootThresholdAngle) &&
-				          yRotation < (180.0f + shootThresholdAngle);
-		var withinRight = yRotation < (  0.0f + shootThresholdAngle) &&
-		        		  yRotation > (  0.0f - shootThresholdAngle);
-		
-		return withinLeft || withinRight;
-	}
+//	
+//	bool IsValidShootingTime() {
+//		return timeSinceLastShot + (1.0f / shootingRate) < Time.time; 
+//	}
+//	
+//	bool IsValidShootingRotation() {
+//		var yRotation = model.transform.rotation.eulerAngles.y;
+//
+//		var withinLeft =  yRotation > (180.0f - shootThresholdAngle) &&
+//				          yRotation < (180.0f + shootThresholdAngle);
+//		var withinRight = yRotation < (  0.0f + shootThresholdAngle) &&
+//		        		  yRotation > (  0.0f - shootThresholdAngle);
+//		
+//		return withinLeft || withinRight;
+//	}
 	
 }
