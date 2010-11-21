@@ -10,7 +10,7 @@ public class PlayerDroidController : MonoBehaviour {
 	public float jumpSpeed = 15.0f;
 	public float minimumJumpTime = 0.25f;
 	public float fallOffTime = 0.25f;
-	public float modelTurnRate = 4.0f;
+	public float modelTurnRate = 200f;
 	public GameObject model;
 	public GameObject jumpThrusterEmitterContainer;
 	public GameObject jumpThrusterSound;
@@ -189,27 +189,17 @@ public class PlayerDroidController : MonoBehaviour {
 			euler.y = faceLeft.eulerAngles.y;
 		}
 		
-		if (facingChanged) {
-			StopCoroutine("FaceDirection");
-			StartCoroutine(FaceDirection(facingRight, Time.time));
+		var y = model.transform.rotation.eulerAngles.y;
+		
+		if (facingRight && (y < -0.1f || y > 0.1f)) {
+			model.transform.Rotate(new Vector3(0f, -modelTurnRate * Time.deltaTime, 0f));
+			var newY = model.transform.rotation.eulerAngles.y;
+			if (newY > 180f) model.transform.rotation = Quaternion.Euler(0f,0f,0f);
+		} else if (!facingRight && (y < 179.9f || y > 180.1f)) {
+			model.transform.Rotate(new Vector3(0f, modelTurnRate * Time.deltaTime, 0f));
+			var newY = model.transform.rotation.eulerAngles.y;
+			if (newY > 180f) model.transform.rotation = Quaternion.Euler(0f,180f,0f);
 		}
-	}
-	
-	IEnumerator FaceDirection(bool desireFaceRight, float time) {
-		var desiredFacing = desireFaceRight ? faceRight : faceLeft;
-		var oppositeFacing = desireFaceRight ? faceLeft : faceRight;
-		
-		var i = model.transform.rotation.eulerAngles.y / 180.0f;
-		if (desireFaceRight) i = 1.0f - i;
-		
-	    var rate = modelTurnRate;
-	    while (i < 1.0f) {
-			if (facingRight != desireFaceRight) yield break;
-	        i += Time.deltaTime * rate;
-	        model.transform.rotation = Quaternion.Lerp(oppositeFacing, desiredFacing, i);
-	        if (i < 1.0f) yield return i;
-			else yield break;
-	    }
 	}
 	
 	void ShowJumpThrusters() {
