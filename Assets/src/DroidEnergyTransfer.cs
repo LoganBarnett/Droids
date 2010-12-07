@@ -6,10 +6,15 @@ using UnityEngine;
 
 class DroidEnergyTransfer : MonoBehaviour {
 	public GameObject lightningBolt;
-	public Material red;
-	public Material green;
-	public Material blue;
+	public Material redMaterial;
+	public Material greenMaterial;
+	public Material blueMaterial;
 	public float transferDistance = 10f;
+	public float energyTransferRate = 0f;
+	
+	float redEnergy = 0f;
+	float greenEnergy = 0f;
+	float blueEnergy = 0f;
 	
 	void Start() {
 		lightningBolt.active = false;
@@ -25,12 +30,16 @@ class DroidEnergyTransfer : MonoBehaviour {
 		if (!useNetworkInput && redInput || greenInput || blueInput) {
 			GameObject station;
 			if (TryShoot(out station)) {
+				var transferAmount = energyTransferRate * Time.deltaTime;
+				
 				lightningBolt.GetComponent<LightningBolt>().target = station.transform;
 				lightningBolt.active = true;
 				var particleRenderer = lightningBolt.GetComponent<ParticleRenderer>();
-				if (redInput) particleRenderer.material = red;
-				else if (greenInput) particleRenderer.material = green;
-				else if (blueInput) particleRenderer.material = blue;
+				if (redInput) particleRenderer.material = redMaterial;
+				else if (greenInput) particleRenderer.material = greenMaterial;
+				else if (blueInput) particleRenderer.material = blueMaterial;
+				
+				
 			} else {
 				lightningBolt.active = false;
 			}

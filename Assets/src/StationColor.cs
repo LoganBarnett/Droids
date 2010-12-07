@@ -16,6 +16,8 @@ class StationColor : MonoBehaviour {
 		}
 	}
 	
+//	public void Decay
+	
 	void Start() {
 
 	}

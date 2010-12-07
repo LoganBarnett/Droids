@@ -106,19 +106,21 @@ public class PlayerDroidController : MonoBehaviour {
 	}
 	
 	void Update() {
-		var y = useNetworkInput ? currentVerticalMovement : GetVerticalMovement();
-		
-		var desiredMoveDirection = Input.GetAxis("Horizontal");
-		var x = useNetworkInput ? currentHorizontalMovement : (desiredMoveDirection * movementSpeed);
-		
-		controller.Move(new Vector3(x, y, 0.0f) * Time.deltaTime);
-		
-		FaceFromMovement(x);
-		ShowJumpThrusters();
-		PlayJumpThrusterSound();
-		
-		currentHorizontalMovement = x;
-		currentVerticalMovement = y;
+		if (IsConsoleClosedLocally()) {
+			var y = useNetworkInput ? currentVerticalMovement : GetVerticalMovement();
+			
+			var desiredMoveDirection = Input.GetAxis("Horizontal");
+			var x = useNetworkInput ? currentHorizontalMovement : (desiredMoveDirection * movementSpeed);
+			
+			controller.Move(new Vector3(x, y, 0.0f) * Time.deltaTime);
+			
+			FaceFromMovement(x);
+			ShowJumpThrusters();
+			PlayJumpThrusterSound();
+			
+			currentHorizontalMovement = x;
+			currentVerticalMovement = y;
+		}
 	}
 	
 	void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info) {
@@ -193,6 +195,12 @@ public class PlayerDroidController : MonoBehaviour {
 			jumpThrusterSoundSource.Stop();
 		}
 	}
+	
+	bool IsConsoleClosedLocally()
+	{
+		return !(Console.IsOpen && !useNetworkInput);
+	}
+	
 	
 //	
 //	bool IsValidShootingTime() {
