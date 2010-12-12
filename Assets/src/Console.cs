@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.Reflection;
 
 class Console : MonoBehaviour {
 	public string consoleDropDownKey = "`";
@@ -55,7 +56,7 @@ class Console : MonoBehaviour {
 				case '\n':
 					output.Push(currentCommand);
 					// TODO: Execute command
-					
+					ExecuteCommand(currentCommand);
 					currentCommand = "";
 					break;
 				default:
@@ -102,6 +103,33 @@ class Console : MonoBehaviour {
 			var outputContent = new GUIContent(outputLine);
 			GUI.Label(new Rect(0f, Screen.height / 2f - (fontSizeInPixels * i), Screen.width, fontSizeInPixels), outputContent);
 			++i;
+		}
+	}
+	
+	void ExecuteCommand(string commandText) {
+		var words = commandText.Split(' ');
+		var commandName = words.First();
+		var arguments = string.Join(" ", words);
+		
+		InvokeCommand(commandName, arguments);
+	}
+	
+	void InvokeCommand(string commandName, string arguments) {
+		var gameObjects = FindSceneObjectsOfType(typeof(GameObject)).Cast<GameObject>();
+		foreach(var sceneGameObject in gameObjects) {
+			var components = sceneGameObject.GetComponents<MonoBehaviour>();
+			foreach (var component in components) {
+				var methods = component.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.NonPublic);
+				
+				foreach (var method in methods) {
+					var attributes = method.GetCustomAttributes(typeof(ConsoleCommandAttribute), false).Cast<ConsoleCommandAttribute>();
+					if (attributes.Count() == 0) continue;
+					
+					if (commandName.ToLower() == attributes.First().CommandName.ToLower()) {
+						method.Invoke(component, new [] {arguments});
+					}
+				}
+			}
 		}
 	}
 	

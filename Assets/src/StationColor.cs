@@ -8,13 +8,13 @@ class StationColor : MonoBehaviour {
 	
 	Color color;
 	
-	public Color Color {
-		get { return color; }
-		set {
-			SetModelColor(value);
-			color = value;
-		}
-	}
+//	public Color Color {
+//		get { return color; }
+//		set {
+//			SetModelColor(value);
+//			color = value;
+//		}
+//	}
 	
 //	public void Decay
 	
@@ -37,5 +37,10 @@ class StationColor : MonoBehaviour {
 		var renderer = gameObject.GetComponent<MeshRenderer>();
 		if (renderer == null) return;
 		renderer.material.color = color;
+	}
+	
+	[ConsoleCommand("set-color")]
+	void SetModelColorCommand(string arguments) {
+		SetModelColor(Color.green);
 	}
 }
